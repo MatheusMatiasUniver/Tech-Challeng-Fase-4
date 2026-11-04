@@ -25,9 +25,8 @@ Run lint and typecheck before declaring any task done.
 
 ## Navigation & Routing
 
-- Use **Expo Router** for all navigation. Routes live in `src/app/` — every file there is a screen, `_layout.tsx` files define navigators. Keep non-route code (components, hooks, utils) outside `src/app/`.
-- Import `Link`, `router`, and `useLocalSearchParams` from `expo-router`.
-- Docs: https://docs.expo.dev/router/introduction.md
+- This project uses **React Navigation** (native stack + bottom tabs), not Expo Router. The choice is explained in `docs/arquitetura.md`.
+- Navigators live in `src/navigation/`; screens in `src/screens/<Name>/`. Protected routes work by rendering either the auth stack or the app stack from `RootNavigator`, based on `useAuth().status`.
 
 ## Building with EAS
 

@@ -30,6 +30,7 @@ App (Expo / React Native)
 ### 2. React Navigation (pilha + abas)
 
 - **Por quê:** é a biblioteca ensinada nas aulas, então o que está no código bate com o material e com o que os avaliadores esperam ver. As rotas protegidas ficam explícitas: o app renderiza a pilha de login **ou** a pilha autenticada conforme o estado do `AuthContext`. Não existe "rota protegida" que dá para acessar pulando a tela; a tela simplesmente não está montada.
+- **Todo o app exige login:** a leitura de posts é pública na API, mas o desafio diferencia professor (cria e edita) de aluno (só visualiza), então os dois entram com conta. Isso também deixa claro no vídeo como funciona a rota protegida.
 - **Abas por papel:** a aba de administração e a de pessoas (professores/alunos) só são montadas para `role === 'professor'`. Isso é conveniência de interface; quem garante a regra é a API (403 para aluno).
 - **Alternativa considerada:** Expo Router (rotas por arquivos, padrão novo do template do Expo, construído em cima do React Navigation). É bom, mas esconde a navegação atrás de convenções de pastas e foge do que as aulas mostram.
 
