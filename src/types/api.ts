@@ -22,3 +22,21 @@ export interface ApiErrorBody {
   message: string
   [detail: string]: unknown
 }
+
+export interface PostAuthor {
+  id: string
+  name: string
+  email: string
+}
+
+export interface Post {
+  id: string
+  title: string
+  content: string
+  authorId: string
+  createdAt: string
+  updatedAt: string
+  // A API sempre carrega o autor em list/search/get; fica opcional porque
+  // create/update devolvem o post sem a relacao.
+  author?: PostAuthor
+}
