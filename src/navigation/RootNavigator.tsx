@@ -8,13 +8,15 @@ import { PostDetailScreen } from '../screens/PostDetail/PostDetailScreen'
 import { colors } from '../theme'
 import { AppTabs } from './AppTabs'
 import { headerTitleStyle, navigationTheme } from './theme'
-import { type AppStackParamList, type AuthStackParamList } from './types'
+import { type AppStackParamList } from './types'
 
-const AuthStack = createNativeStackNavigator<AuthStackParamList>()
-const AppStack = createNativeStackNavigator<AppStackParamList>()
+const Stack = createNativeStackNavigator<AppStackParamList>()
 
-// Rotas protegidas: so uma das duas pilhas existe por vez. Sem login, as telas
-// do app nao estao montadas, entao nao ha como chegar nelas.
+// Leitura e publica, como na API e no site da Fase 3: lista e post abrem sem
+// login. As rotas protegidas sao as abas de professor (AppTabs) e a de Conta,
+// que so sao montadas depois do login. A tela de Login, ao contrario, so existe
+// enquanto ninguem esta logado: ao entrar, o React Navigation a remove sozinho
+// e volta para onde o usuario estava, sem precisar de navigate().
 export function RootNavigator() {
   const { status } = useAuth()
 
@@ -28,22 +30,24 @@ export function RootNavigator() {
 
   return (
     <NavigationContainer theme={navigationTheme}>
-      {status === 'signedIn' ? (
-        <AppStack.Navigator>
-          <AppStack.Screen name="Tabs" component={AppTabs} options={{ headerShown: false }} />
-          <AppStack.Screen
-            name="PostDetail"
-            component={PostDetailScreen}
-            // O titulo do post ja aparece grande na tela; no cabecalho fica so
-            // o "voltar", como o link "← Voltar para a lista" do site.
-            options={{ title: '', headerBackTitle: 'Voltar', headerTitleStyle }}
+      <Stack.Navigator>
+        <Stack.Screen name="Tabs" component={AppTabs} options={{ headerShown: false }} />
+        <Stack.Screen
+          name="PostDetail"
+          component={PostDetailScreen}
+          // O titulo do post ja aparece grande na tela; no cabecalho fica so
+          // o "voltar", como o link "← Voltar para a lista" do site.
+          options={{ title: '', headerBackTitle: 'Voltar', headerTitleStyle }}
+        />
+        {status !== 'signedIn' && (
+          <Stack.Screen
+            name="Login"
+            component={LoginScreen}
+            // Modal: abre por cima da lista e fecha com o gesto de voltar.
+            options={{ presentation: 'modal', title: '', headerBackTitle: 'Fechar' }}
           />
-        </AppStack.Navigator>
-      ) : (
-        <AuthStack.Navigator screenOptions={{ headerShown: false }}>
-          <AuthStack.Screen name="Login" component={LoginScreen} />
-        </AuthStack.Navigator>
-      )}
+        )}
+      </Stack.Navigator>
     </NavigationContainer>
   )
 }
