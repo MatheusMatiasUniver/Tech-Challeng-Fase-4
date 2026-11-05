@@ -1,7 +1,7 @@
 import { type NativeStackScreenProps } from '@react-navigation/native-stack'
 import { isAxiosError } from 'axios'
 import { useCallback, useEffect, useState } from 'react'
-import { ScrollView, StyleSheet, Text, View } from 'react-native'
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native'
 
 import { getErrorMessage } from '../../api/client'
 import { postsApi } from '../../api/posts'
@@ -11,6 +11,7 @@ import { type AppStackParamList } from '../../navigation/types'
 import { colors, fonts } from '../../theme'
 import { type Post } from '../../types/api'
 import { formatPostMeta } from '../../utils/format'
+import { CommentsSection } from './CommentsSection'
 
 type Props = NativeStackScreenProps<AppStackParamList, 'PostDetail'>
 
@@ -41,30 +42,42 @@ export function PostDetailScreen({ route, navigation }: Props) {
   }, [load])
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      {state.status === 'loading' && <AsyncState status="loading" label="Carregando post..." />}
-      {state.status === 'error' && (
-        <AsyncState status="error" message={state.message} onRetry={load} />
-      )}
-      {state.status === 'not-found' && (
-        <View style={styles.notFound} accessibilityRole="alert">
-          <Text style={styles.notFoundTitle}>Post não encontrado</Text>
-          <Text style={styles.notFoundText}>Ele pode ter sido removido pelo autor.</Text>
-          <Button title="Voltar para a lista" onPress={() => navigation.goBack()} />
-        </View>
-      )}
-      {state.status === 'success' && (
-        <>
-          <Text style={styles.title} accessibilityRole="header">
-            {state.post.title}
-          </Text>
-          <Text style={styles.meta}>{formatPostMeta(state.post)}</Text>
-          <Text style={styles.body} selectable>
-            {state.post.content}
-          </Text>
-        </>
-      )}
-    </ScrollView>
+    // No iPhone o teclado cobriria o campo de comentario no fim da tela.
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      keyboardVerticalOffset={100}
+    >
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
+      >
+        {state.status === 'loading' && <AsyncState status="loading" label="Carregando post..." />}
+        {state.status === 'error' && (
+          <AsyncState status="error" message={state.message} onRetry={load} />
+        )}
+        {state.status === 'not-found' && (
+          <View style={styles.notFound} accessibilityRole="alert">
+            <Text style={styles.notFoundTitle}>Post não encontrado</Text>
+            <Text style={styles.notFoundText}>Ele pode ter sido removido pelo autor.</Text>
+            <Button title="Voltar para a lista" onPress={() => navigation.goBack()} />
+          </View>
+        )}
+        {state.status === 'success' && (
+          <>
+            <Text style={styles.title} accessibilityRole="header">
+              {state.post.title}
+            </Text>
+            <Text style={styles.meta}>{formatPostMeta(state.post)}</Text>
+            <Text style={styles.body} selectable>
+              {state.post.content}
+            </Text>
+            <CommentsSection postId={state.post.id} postAuthorId={state.post.authorId} />
+          </>
+        )}
+      </ScrollView>
+    </KeyboardAvoidingView>
   )
 }
 
