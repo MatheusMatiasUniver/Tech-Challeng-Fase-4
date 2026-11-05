@@ -7,6 +7,7 @@ import { LoginScreen } from '../screens/Login/LoginScreen'
 import { PostDetailScreen } from '../screens/PostDetail/PostDetailScreen'
 import { colors } from '../theme'
 import { AppTabs } from './AppTabs'
+import { headerTitleStyle, navigationTheme } from './theme'
 import { type AppStackParamList, type AuthStackParamList } from './types'
 
 const AuthStack = createNativeStackNavigator<AuthStackParamList>()
@@ -20,20 +21,22 @@ export function RootNavigator() {
   if (status === 'restoring') {
     return (
       <View style={styles.loading}>
-        <ActivityIndicator size="large" color={colors.primary} />
+        <ActivityIndicator size="large" color={colors.accent} />
       </View>
     )
   }
 
   return (
-    <NavigationContainer>
+    <NavigationContainer theme={navigationTheme}>
       {status === 'signedIn' ? (
         <AppStack.Navigator>
           <AppStack.Screen name="Tabs" component={AppTabs} options={{ headerShown: false }} />
           <AppStack.Screen
             name="PostDetail"
             component={PostDetailScreen}
-            options={({ route }) => ({ title: route.params.title ?? 'Post', headerBackTitle: 'Voltar' })}
+            // O titulo do post ja aparece grande na tela; no cabecalho fica so
+            // o "voltar", como o link "← Voltar para a lista" do site.
+            options={{ title: '', headerBackTitle: 'Voltar', headerTitleStyle }}
           />
         </AppStack.Navigator>
       ) : (
@@ -50,6 +53,6 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.background,
+    backgroundColor: colors.bg,
   },
 })

@@ -1,30 +1,38 @@
+import { isAxiosError } from 'axios'
 import { useState } from 'react'
-import {
-  ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native'
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native'
 
 import { getErrorMessage } from '../../api/client'
 import { useAuth } from '../../auth/AuthContext'
-import { colors, spacing } from '../../theme'
+import { Brand } from '../../components/Brand'
+import { Button } from '../../components/Button'
+import { TextField } from '../../components/TextField'
+import { colors, fonts, radii } from '../../theme'
+
+interface FieldErrors {
+  email?: string
+  password?: string
+}
+
+// Mesma mensagem da Fase 3 para 401: nao revela se o e-mail existe.
+const INVALID_CREDENTIALS = 'E-mail ou senha inválidos. Tente novamente.'
 
 export function LoginScreen() {
   const { signIn } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
 
-  const canSubmit = email.trim() !== '' && password !== '' && !submitting
-
   async function handleSubmit() {
-    if (!canSubmit) return
+    // Validacao local igual a do LoginForm da Fase 3, antes de chamar a API.
+    const errors: FieldErrors = {}
+    if (email.trim() === '') errors.email = 'Informe o e-mail.'
+    if (password === '') errors.password = 'Informe a senha.'
+    setFieldErrors(errors)
+    if (Object.keys(errors).length > 0) return
+
     setError(null)
     setSubmitting(true)
     try {
@@ -32,97 +40,101 @@ export function LoginScreen() {
       // Sem navigate(): o AuthContext muda para 'signedIn' e o RootNavigator
       // troca a pilha de login pela pilha autenticada sozinho.
     } catch (err) {
-      setError(getErrorMessage(err))
+      setError(
+        isAxiosError(err) && err.response?.status === 401 ? INVALID_CREDENTIALS : getErrorMessage(err),
+      )
+      setPassword('')
       setSubmitting(false)
     }
   }
 
   return (
     <KeyboardAvoidingView
-      style={styles.container}
+      style={styles.flex}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <Text style={styles.title}>Sala Aberta</Text>
-      <Text style={styles.subtitle}>Entre com sua conta de professor ou aluno</Text>
+      <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+        <Brand />
+        <Text style={styles.title} accessibilityRole="header">
+          Entrar
+        </Text>
+        <Text style={styles.subtitle}>Use sua conta de professor ou aluno da Sala Aberta.</Text>
 
-      <View style={styles.form}>
-        <Text style={styles.label}>E-mail</Text>
-        <TextInput
-          style={styles.input}
-          value={email}
-          onChangeText={setEmail}
-          autoCapitalize="none"
-          autoComplete="email"
-          keyboardType="email-address"
-          textContentType="emailAddress"
-          placeholderTextColor={colors.muted}
-        placeholder="voce@escola.com"
-          accessibilityLabel="E-mail"
-        />
+        <View style={styles.card}>
+          <TextField
+            label="E-mail"
+            value={email}
+            onChangeText={(text) => {
+              setEmail(text)
+              setFieldErrors((current) => ({ ...current, email: undefined }))
+            }}
+            error={fieldErrors.email}
+            editable={!submitting}
+            autoCapitalize="none"
+            autoComplete="email"
+            keyboardType="email-address"
+            textContentType="emailAddress"
+          />
+          <TextField
+            label="Senha"
+            value={password}
+            onChangeText={(text) => {
+              setPassword(text)
+              setFieldErrors((current) => ({ ...current, password: undefined }))
+            }}
+            error={fieldErrors.password}
+            editable={!submitting}
+            secureTextEntry
+            autoComplete="current-password"
+            textContentType="password"
+            onSubmitEditing={handleSubmit}
+          />
 
-        <Text style={styles.label}>Senha</Text>
-        <TextInput
-          style={styles.input}
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          autoComplete="password"
-          textContentType="password"
-          onSubmitEditing={handleSubmit}
-          accessibilityLabel="Senha"
-        />
-
-        {error !== null && (
-          <Text style={styles.error} accessibilityRole="alert">
-            {error}
-          </Text>
-        )}
-
-        <Pressable
-          style={[styles.button, !canSubmit && styles.buttonDisabled]}
-          onPress={handleSubmit}
-          disabled={!canSubmit}
-          accessibilityRole="button"
-        >
-          {submitting ? (
-            <ActivityIndicator color={colors.primaryText} />
-          ) : (
-            <Text style={styles.buttonText}>Entrar</Text>
+          {error !== null && (
+            <View style={styles.errorBox}>
+              <Text style={styles.errorText} accessibilityRole="alert">
+                {error}
+              </Text>
+            </View>
           )}
-        </Pressable>
-      </View>
+
+          <Button
+            title={submitting ? 'Entrando...' : 'Entrar'}
+            onPress={handleSubmit}
+            loading={submitting}
+          />
+        </View>
+      </ScrollView>
     </KeyboardAvoidingView>
   )
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    padding: spacing.lg,
-    backgroundColor: colors.background,
+  flex: { flex: 1, backgroundColor: colors.bg },
+  container: { flexGrow: 1, justifyContent: 'center', padding: 20, paddingVertical: 48 },
+  title: {
+    marginTop: 40,
+    marginBottom: 8,
+    fontFamily: fonts.heading,
+    fontSize: 44,
+    lineHeight: 46,
+    color: colors.textH,
   },
-  title: { fontSize: 28, fontWeight: '700', color: colors.text, textAlign: 'center' },
-  subtitle: { marginTop: spacing.xs, color: colors.muted, textAlign: 'center' },
-  form: { marginTop: spacing.xl },
-  label: { marginTop: spacing.md, marginBottom: spacing.xs, color: colors.text, fontWeight: '500' },
-  input: {
+  subtitle: { marginBottom: 26, fontFamily: fonts.regular, fontSize: 16, color: colors.text },
+  card: {
+    backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: 8,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm + 4,
-    backgroundColor: colors.surface,
-    fontSize: 16,
+    borderRadius: radii.card,
+    padding: 22,
+    gap: 18,
   },
-  error: { marginTop: spacing.md, color: colors.danger },
-  button: {
-    marginTop: spacing.lg,
-    backgroundColor: colors.primary,
-    borderRadius: 8,
-    paddingVertical: spacing.md,
-    alignItems: 'center',
+  errorBox: {
+    padding: 14,
+    backgroundColor: colors.errorBg,
+    borderWidth: 1,
+    borderColor: colors.accentSoft,
+    borderRadius: radii.field,
   },
-  buttonDisabled: { opacity: 0.5 },
-  buttonText: { color: colors.primaryText, fontWeight: '600', fontSize: 16 },
+  errorText: { fontFamily: fonts.regular, fontSize: 15, color: colors.error },
 })
