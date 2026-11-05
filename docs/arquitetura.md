@@ -73,6 +73,8 @@ src/
 | Posts | `POST`, `PUT /:id`, `DELETE /:id` | professor |
 | Professores | `/teachers` CRUD, `?page&limit` → `{ data, meta }` | professor |
 | Alunos | `/students` CRUD, `?page&limit` → `{ data, meta }` | professor |
+| Comentários | `GET /posts/:postId/comments` | público |
+| Comentários | `POST /posts/:postId/comments`, `DELETE .../:commentId` | qualquer usuário logado |
 
 Excluir professor com posts retorna 409 `TEACHER_HAS_POSTS`; o app pergunta ao usuário e repete com `?deletePosts=true`.
 
@@ -84,3 +86,17 @@ O app segue a identidade do site da Fase 3 ("Sala Aberta"), para os dois parecer
 - **Fontes:** Instrument Serif nos títulos e Public Sans no texto, as mesmas do site, embutidas com `@expo-google-fonts` (funcionam sem internet depois de instaladas). No React Native cada peso é um arquivo separado, então os estilos usam `fontFamily: fonts.semibold` em vez de `fontWeight: '600'`.
 - **Componentes equivalentes:** `Button`, `TextField`, `AsyncState`, `Eyebrow`, `Brand` e `PostCard` reproduzem os do site.
 - **Adaptações ao toque:** o que no site é hover (cartão sobe, botão fica vinho) vira estado pressionado. A busca não tem botões "Buscar"/"Limpar": busca sozinha ao parar de digitar, o que é mais natural no celular. A navegação do topo do site vira abas embaixo, padrão de app.
+
+## Cadastro de professores e alunos
+
+- **Uma tela, duas listas.** A aba Pessoas tem um seletor Professores/Alunos. A API usa o mesmo controller para `/teachers` e `/students`, então o app também: `src/api/users.ts` é uma fábrica, e `PeopleScreen` e `UserFormScreen` servem os dois papéis.
+- **Paginação com botões** ("Anterior · Página X de Y · Próxima") em vez de rolagem infinita: o requisito pede lista paginada e a API já devolve `totalPages`. Cada lista lembra a própria página.
+- **Exclusão em duas etapas para professor com posts.** A primeira tentativa vai sem `deletePosts`; se a API responder `TEACHER_HAS_POSTS`, o diálogo reabre dizendo quantos posts serão apagados. Nada é apagado sem o usuário ver o número.
+- A própria conta não tem botão Excluir (a API recusaria com `CANNOT_DELETE_SELF`). Na edição a senha é opcional e o `PUT` manda só os campos alterados.
+
+## Comentários (opcional da Fase 4)
+
+- Ler é público; **comentar exige login** (professor ou aluno). Sem login, no lugar do campo aparece "Entrar para comentar", que abre o Login por cima e volta para o mesmo post.
+- Excluir: o autor do comentário e o professor dono do post (mesma regra da API, que responde 403 aos demais).
+- As rotas foram criadas na API da Fase 2 (tabela `comments`, FKs com `CASCADE`).
+
