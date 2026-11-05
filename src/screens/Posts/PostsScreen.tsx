@@ -44,6 +44,7 @@ export function PostsScreen() {
         style={styles.search}
         value={search}
         onChangeText={setSearch}
+        placeholderTextColor={colors.muted}
         placeholder="Buscar por título ou conteúdo"
         autoCapitalize="none"
         autoCorrect={false}
