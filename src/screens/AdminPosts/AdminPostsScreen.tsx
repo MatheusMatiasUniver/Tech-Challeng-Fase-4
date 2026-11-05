@@ -3,7 +3,7 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native'
 import { type NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { isAxiosError } from 'axios'
 import { useCallback, useRef, useState } from 'react'
-import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native'
+import { FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native'
 
 import { getErrorMessage } from '../../api/client'
 import { postsApi } from '../../api/posts'
@@ -12,8 +12,9 @@ import { AsyncState } from '../../components/AsyncState'
 import { Button } from '../../components/Button'
 import { ConfirmDialog } from '../../components/ConfirmDialog'
 import { Notice } from '../../components/Notice'
+import { SmallButton } from '../../components/SmallButton'
 import { type AppStackParamList, type AppTabsParamList } from '../../navigation/types'
-import { colors, fonts, radii } from '../../theme'
+import { colors, fonts } from '../../theme'
 import { type Post } from '../../types/api'
 import { formatPostMeta } from '../../utils/format'
 
@@ -162,30 +163,6 @@ export function AdminPostsScreen({ route }: Props) {
   )
 }
 
-// Botoes menores das linhas, iguais aos Ver/Editar/Excluir do admin da Fase 3.
-function SmallButton({
-  label,
-  a11y,
-  variant,
-  onPress,
-}: {
-  label: string
-  a11y: string
-  variant: 'outline' | 'ink' | 'danger'
-  onPress: () => void
-}) {
-  return (
-    <Pressable
-      onPress={onPress}
-      accessibilityRole="button"
-      accessibilityLabel={a11y}
-      style={({ pressed }) => [styles.small, smallStyles[variant], pressed && smallPressed[variant]]}
-    >
-      <Text style={[styles.smallLabel, smallLabel[variant]]}>{label}</Text>
-    </Pressable>
-  )
-}
-
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.bg },
   content: { padding: 20, paddingBottom: 40, flexGrow: 1 },
@@ -201,23 +178,5 @@ const styles = StyleSheet.create({
   title: { fontFamily: fonts.semibold, fontSize: 18, lineHeight: 24, color: colors.textH },
   meta: { marginTop: 6, fontFamily: fonts.regular, fontSize: 14, lineHeight: 20, color: colors.muted },
   actions: { flexDirection: 'row', gap: 8, marginTop: 14 },
-  small: { paddingVertical: 9, paddingHorizontal: 15, borderRadius: 9, borderWidth: 1 },
-  smallLabel: { fontFamily: fonts.semibold, fontSize: 14 },
-})
-
-const smallStyles = StyleSheet.create({
-  outline: { borderColor: colors.borderStrong },
-  ink: { borderColor: colors.ink, backgroundColor: colors.ink },
-  danger: { borderColor: colors.accentSoft },
-})
-const smallPressed = StyleSheet.create({
-  outline: { borderColor: colors.ink },
-  ink: { borderColor: colors.accent, backgroundColor: colors.accent },
-  danger: { backgroundColor: colors.errorBg },
-})
-const smallLabel = StyleSheet.create({
-  outline: { color: colors.text },
-  ink: { color: colors.onInk },
-  danger: { color: colors.accent },
 })
 

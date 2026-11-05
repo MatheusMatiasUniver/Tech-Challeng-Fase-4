@@ -40,3 +40,16 @@ export interface Post {
   // create/update devolvem o post sem a relacao.
   author?: PostAuthor
 }
+
+// Listas de professores e alunos sao paginadas: { data, meta } (ver list-users.ts).
+export interface PaginationMeta {
+  page: number
+  limit: number
+  total: number
+  totalPages: number
+}
+
+export interface Paginated<T> {
+  data: T[]
+  meta: PaginationMeta
+}
