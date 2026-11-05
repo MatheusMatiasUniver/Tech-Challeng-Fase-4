@@ -6,6 +6,7 @@ import { useAuth } from '../auth/AuthContext'
 import { LoginScreen } from '../screens/Login/LoginScreen'
 import { PostDetailScreen } from '../screens/PostDetail/PostDetailScreen'
 import { PostFormScreen } from '../screens/PostForm/PostFormScreen'
+import { UserFormScreen } from '../screens/UserForm/UserFormScreen'
 import { colors } from '../theme'
 import { AppTabs } from './AppTabs'
 import { headerTitleStyle, navigationTheme } from './theme'
@@ -42,11 +43,19 @@ export function RootNavigator() {
         />
         {/* Rota protegida: o formulario so existe para professor logado. */}
         {isTeacher && (
-          <Stack.Screen
-            name="PostForm"
-            component={PostFormScreen}
-            options={{ headerBackTitle: 'Voltar', headerTitleStyle }}
-          />
+          <>
+            <Stack.Screen
+              name="PostForm"
+              component={PostFormScreen}
+              options={{ headerBackTitle: 'Voltar', headerTitleStyle }}
+            />
+            {/* Cadastro de professores e alunos: tambem so para professor. */}
+            <Stack.Screen
+              name="UserForm"
+              component={UserFormScreen}
+              options={{ headerBackTitle: 'Voltar', headerTitleStyle }}
+            />
+          </>
         )}
         {status !== 'signedIn' && (
           <Stack.Screen
