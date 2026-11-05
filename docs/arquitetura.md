@@ -10,10 +10,10 @@ App (Expo / React Native)
  │   └─ expo-secure-store          persiste o token no armazenamento seguro do aparelho
  ├─ api/client.ts (Axios)          baseURL + header Authorization + tratamento de 401
  └─ Navegação (React Navigation)
-     ├─ Pilha pública              Login
-     └─ Pilha autenticada
-         ├─ Abas: Posts | Admin* | Pessoas*      (* só professor)
-         └─ Telas empilhadas: Post, Editar post, Professor, Aluno...
+     └─ Pilha única
+         ├─ Abas: Posts | Admin* | Pessoas* | Conta**   (* só professor, ** só logado)
+         ├─ Post (leitura pública)
+         └─ Login (modal, só sem sessão)
                 │
                 ▼
      API REST da Fase 2 (Render)   /auth, /posts, /teachers, /students
@@ -29,8 +29,8 @@ App (Expo / React Native)
 
 ### 2. React Navigation (pilha + abas)
 
-- **Por quê:** é a biblioteca ensinada nas aulas, então o que está no código bate com o material e com o que os avaliadores esperam ver. As rotas protegidas ficam explícitas: o app renderiza a pilha de login **ou** a pilha autenticada conforme o estado do `AuthContext`. Não existe "rota protegida" que dá para acessar pulando a tela; a tela simplesmente não está montada.
-- **Todo o app exige login:** a leitura de posts é pública na API, mas o desafio diferencia professor (cria e edita) de aluno (só visualiza), então os dois entram com conta. Isso também deixa claro no vídeo como funciona a rota protegida.
+- **Por quê:** é a biblioteca ensinada nas aulas, então o que está no código bate com o material e com o que os avaliadores esperam ver. As rotas protegidas ficam explícitas: as telas restritas só são montadas quando o `AuthContext` tem um usuário com o papel certo. Não existe "rota protegida" que dá para acessar pulando a tela; a tela simplesmente não está montada.
+- **Leitura sem login, como na Fase 3:** a lista e a leitura de posts abrem sem conta, porque a API deixa essas rotas públicas e o aluno "só visualiza". O botão "Entrar" do cabeçalho abre o login. Depois de entrar, o professor ganha as abas de administração e pessoas, e todo usuário logado ganha a aba Conta. A tela de Login só é montada enquanto ninguém está logado, então ao entrar ela some sozinha.
 - **Abas por papel:** a aba de administração e a de pessoas (professores/alunos) só são montadas para `role === 'professor'`. Isso é conveniência de interface; quem garante a regra é a API (403 para aluno).
 - **Alternativa considerada:** Expo Router (rotas por arquivos, padrão novo do template do Expo, construído em cima do React Navigation). É bom, mas esconde a navegação atrás de convenções de pastas e foge do que as aulas mostram.
 

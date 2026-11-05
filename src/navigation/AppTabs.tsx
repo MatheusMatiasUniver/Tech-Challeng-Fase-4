@@ -1,5 +1,7 @@
 import { Ionicons } from '@expo/vector-icons'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
+import { useNavigation } from '@react-navigation/native'
+import { type NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { type ComponentProps } from 'react'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
@@ -9,8 +11,10 @@ import { AdminPostsScreen } from '../screens/AdminPosts/AdminPostsScreen'
 import { PeopleScreen } from '../screens/People/PeopleScreen'
 import { PostsScreen } from '../screens/Posts/PostsScreen'
 import { Brand } from '../components/Brand'
+import { HeaderPill } from '../components/HeaderPill'
 import { colors, fonts } from '../theme'
 import { headerTitleStyle } from './theme'
+import { type AppStackParamList } from './types'
 import { type AppTabsParamList } from './types'
 
 const Tab = createBottomTabNavigator<AppTabsParamList>()
@@ -26,7 +30,9 @@ const icons: Record<keyof AppTabsParamList, [IconName, IconName]> = {
 }
 
 export function AppTabs() {
-  const { isTeacher } = useAuth()
+  const { isTeacher, status } = useAuth()
+  const navigation = useNavigation<NativeStackNavigationProp<AppStackParamList>>()
+  const signedIn = status === 'signedIn'
   // A barra padrao tem 49 px; com a Public Sans (mais alta que a fonte do
   // sistema) o rotulo encostava na borda de baixo. Altura propria + a area
   // segura do aparelho (barra de gestos do iPhone/Android).
@@ -40,6 +46,8 @@ export function AppTabs() {
         tabBarActiveTintColor: colors.accent,
         tabBarInactiveTintColor: colors.muted,
         tabBarStyle: {
+          // Sem login so existe a aba Posts; uma barra com uma aba so nao ajuda.
+          display: signedIn ? 'flex' : 'none',
           backgroundColor: colors.surface,
           borderTopColor: colors.border,
           height: 64 + insets.bottom,
@@ -56,7 +64,13 @@ export function AppTabs() {
         name="Posts"
         component={PostsScreen}
         // A aba inicial mostra a marca no lugar do titulo, como o topo do site.
-        options={{ headerTitle: () => <Brand />, headerTitleAlign: 'left' }}
+        options={{
+          headerTitle: () => <Brand />,
+          headerTitleAlign: 'left',
+          headerRight: signedIn
+            ? undefined
+            : () => <HeaderPill title="Entrar" onPress={() => navigation.navigate('Login')} />,
+        }}
       />
       {/* Abas de professor nem sao montadas para aluno. E so interface:
           a regra de verdade e o 403 da API. */}
@@ -70,7 +84,9 @@ export function AppTabs() {
           <Tab.Screen name="People" component={PeopleScreen} options={{ title: 'Pessoas' }} />
         </>
       )}
-      <Tab.Screen name="Account" component={AccountScreen} options={{ title: 'Conta' }} />
+      {signedIn && (
+        <Tab.Screen name="Account" component={AccountScreen} options={{ title: 'Conta' }} />
+      )}
     </Tab.Navigator>
   )
 }

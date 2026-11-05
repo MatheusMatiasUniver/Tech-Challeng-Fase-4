@@ -4,7 +4,6 @@ import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } fr
 
 import { getErrorMessage } from '../../api/client'
 import { useAuth } from '../../auth/AuthContext'
-import { Brand } from '../../components/Brand'
 import { Button } from '../../components/Button'
 import { TextField } from '../../components/TextField'
 import { colors, fonts, radii } from '../../theme'
@@ -37,8 +36,8 @@ export function LoginScreen() {
     setSubmitting(true)
     try {
       await signIn(email.trim(), password)
-      // Sem navigate(): o AuthContext muda para 'signedIn' e o RootNavigator
-      // troca a pilha de login pela pilha autenticada sozinho.
+      // Sem navigate(): com 'signedIn' o RootNavigator deixa de montar a tela
+      // de Login e o React Navigation volta para a tela anterior sozinho.
     } catch (err) {
       setError(
         isAxiosError(err) && err.response?.status === 401 ? INVALID_CREDENTIALS : getErrorMessage(err),
@@ -54,11 +53,10 @@ export function LoginScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-        <Brand />
-        <Text style={styles.title} accessibilityRole="header">
+                <Text style={styles.title} accessibilityRole="header">
           Entrar
         </Text>
-        <Text style={styles.subtitle}>Use sua conta de professor ou aluno da Sala Aberta.</Text>
+        <Text style={styles.subtitle}>Área de professores e alunos cadastrados. Para ler os posts não é preciso entrar.</Text>
 
         <View style={styles.card}>
           <TextField
@@ -111,9 +109,8 @@ export function LoginScreen() {
 
 const styles = StyleSheet.create({
   flex: { flex: 1, backgroundColor: colors.bg },
-  container: { flexGrow: 1, justifyContent: 'center', padding: 20, paddingVertical: 48 },
+  container: { flexGrow: 1, padding: 20, paddingTop: 24 },
   title: {
-    marginTop: 40,
     marginBottom: 8,
     fontFamily: fonts.heading,
     fontSize: 44,
