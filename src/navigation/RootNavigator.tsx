@@ -4,6 +4,7 @@ import { ActivityIndicator, StyleSheet, View } from 'react-native'
 
 import { useAuth } from '../auth/AuthContext'
 import { LoginScreen } from '../screens/Login/LoginScreen'
+import { PostDetailScreen } from '../screens/PostDetail/PostDetailScreen'
 import { colors } from '../theme'
 import { AppTabs } from './AppTabs'
 import { type AppStackParamList, type AuthStackParamList } from './types'
@@ -29,6 +30,11 @@ export function RootNavigator() {
       {status === 'signedIn' ? (
         <AppStack.Navigator>
           <AppStack.Screen name="Tabs" component={AppTabs} options={{ headerShown: false }} />
+          <AppStack.Screen
+            name="PostDetail"
+            component={PostDetailScreen}
+            options={({ route }) => ({ title: route.params.title ?? 'Post', headerBackTitle: 'Voltar' })}
+          />
         </AppStack.Navigator>
       ) : (
         <AuthStack.Navigator screenOptions={{ headerShown: false }}>
