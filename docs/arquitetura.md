@@ -75,3 +75,12 @@ src/
 | Alunos | `/students` CRUD, `?page&limit` → `{ data, meta }` | professor |
 
 Excluir professor com posts retorna 409 `TEACHER_HAS_POSTS`; o app pergunta ao usuário e repete com `?deletePosts=true`.
+
+## Design: mesmo visual da Fase 3
+
+O app segue a identidade do site da Fase 3 ("Sala Aberta"), para os dois parecerem o mesmo produto.
+
+- **Tokens:** `src/theme/index.ts` copia as variáveis CSS de `src/index.css` da Fase 3 (fundo creme `#f6f3ec`, cartões `#fffdf8`, vinho `#b6003f` como destaque, preto `#16181d` nos botões principais).
+- **Fontes:** Instrument Serif nos títulos e Public Sans no texto, as mesmas do site, embutidas com `@expo-google-fonts` (funcionam sem internet depois de instaladas). No React Native cada peso é um arquivo separado, então os estilos usam `fontFamily: fonts.semibold` em vez de `fontWeight: '600'`.
+- **Componentes equivalentes:** `Button`, `TextField`, `AsyncState`, `Eyebrow`, `Brand` e `PostCard` reproduzem os do site.
+- **Adaptações ao toque:** o que no site é hover (cartão sobe, botão fica vinho) vira estado pressionado. A busca não tem botões "Buscar"/"Limpar": busca sozinha ao parar de digitar, o que é mais natural no celular. A navegação do topo do site vira abas embaixo, padrão de app.
