@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { StyleSheet, Text, TextInput, type TextInputProps, View } from 'react-native'
+import { Platform, StyleSheet, Text, TextInput, type TextInputProps, View } from 'react-native'
 
 import { colors, fonts, radii } from '../theme'
 
@@ -67,6 +67,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.borderStrong,
     borderRadius: radii.field,
+    // Na versao web (usada nas previas) o navegador desenha um contorno preto
+    // por cima da borda de foco; no celular isso nao existe.
+    ...Platform.select({ web: { outlineStyle: 'solid' as const, outlineWidth: 0 }, default: {} }),
   },
   // No site o foco e um contorno de 2px; no app, borda de 2px tem o mesmo efeito.
   focused: { borderColor: colors.accent, borderWidth: 2, paddingVertical: 11, paddingHorizontal: 13 },
