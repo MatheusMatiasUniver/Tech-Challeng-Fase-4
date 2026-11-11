@@ -69,7 +69,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let cancelled = false
 
     async function restore() {
-      const token = await tokenStorage.get()
+      let token: string | null
+      try {
+        token = await tokenStorage.get()
+      } catch {
+        // Falha ao ler o armazenamento seguro (raro, mas acontece em alguns
+        // Android apos restaurar backup): segue sem sessao em vez de travar
+        // na tela de carregamento.
+        token = null
+      }
       if (token === null) {
         if (!cancelled) setStatus('signedOut')
         return
