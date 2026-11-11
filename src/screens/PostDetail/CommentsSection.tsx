@@ -56,6 +56,9 @@ export function CommentsSection({ postId, postAuthorId }: Props) {
   }, [load])
 
   async function send() {
+    // So envia com a lista carregada: o comentario novo entra no fim dela.
+    // Com a lista ainda carregando ou com erro, ele sumiria da tela.
+    if (list.status !== 'ready') return
     const content = draft.trim()
     if (content.length === 0) {
       setDraftError('Escreva algo antes de enviar.')
@@ -181,7 +184,12 @@ export function CommentsSection({ postId, postAuthorId }: Props) {
             <Text style={styles.counter}>
               {draft.length}/{COMMENT_MAX_LENGTH}
             </Text>
-            <Button title="Comentar" onPress={send} loading={sending} />
+            <Button
+              title="Comentar"
+              onPress={send}
+              loading={sending}
+              disabled={list.status !== 'ready'}
+            />
           </View>
         </View>
       ) : (
