@@ -32,14 +32,21 @@ export function AdminPostsScreen({ route }: Props) {
   const [pendingDelete, setPendingDelete] = useState<Post | null>(null)
   const [deleting, setDeleting] = useState(false)
   const lastNotice = useRef<string | undefined>(undefined)
+  // Cada GET ganha um numero e so o mais recente atualiza a lista. Excluir
+  // tambem avanca o numero: um GET que saiu antes da exclusao ainda traz o
+  // post apagado e nao pode devolver a linha para a tela.
+  const generation = useRef(0)
 
   const load = useCallback(async () => {
+    const current = ++generation.current
     try {
       const posts = await postsApi.list()
+      if (current !== generation.current) return
       // A API so deixa o autor editar/excluir (403 para os outros), entao a
       // tela mostra so os posts do professor logado, como o admin da Fase 3.
       setList({ status: 'ready', posts: posts.filter((post) => post.authorId === user?.id) })
     } catch (err) {
+      if (current !== generation.current) return
       setList({ status: 'error', message: getErrorMessage(err) })
     }
   }, [user?.id])
@@ -69,6 +76,7 @@ export function AdminPostsScreen({ route }: Props) {
     setDeleting(true)
     try {
       await postsApi.remove(post.id)
+      generation.current++
       // Remove da lista local sem esperar outro GET.
       setList((current) =>
         current.status === 'ready'

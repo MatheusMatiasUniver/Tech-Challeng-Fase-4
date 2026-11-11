@@ -10,6 +10,8 @@ interface UsePostsResult {
   refreshing: boolean
   error: string | null
   refresh: () => void
+  // Recarrega sem indicador (ex.: ao voltar para a aba).
+  reload: () => void
 }
 
 // Busca a lista (ou o resultado da busca, se `query` nao estiver vazio).
@@ -23,10 +25,10 @@ export function usePosts(query: string): UsePostsResult {
   const lastRequest = useRef(0)
 
   const load = useCallback(
-    async (mode: 'initial' | 'refresh') => {
+    async (mode: 'initial' | 'refresh' | 'silent') => {
       const requestId = ++lastRequest.current
       if (mode === 'initial') setLoading(true)
-      else setRefreshing(true)
+      else if (mode === 'refresh') setRefreshing(true)
       setError(null)
 
       try {
@@ -53,5 +55,9 @@ export function usePosts(query: string): UsePostsResult {
     void load('refresh')
   }, [load])
 
-  return { posts, loading, refreshing, error, refresh }
+  const reload = useCallback(() => {
+    void load('silent')
+  }, [load])
+
+  return { posts, loading, refreshing, error, refresh, reload }
 }
