@@ -1,6 +1,6 @@
-import { useNavigation } from '@react-navigation/native'
+import { useFocusEffect, useNavigation } from '@react-navigation/native'
 import { type NativeStackNavigationProp } from '@react-navigation/native-stack'
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { FlatList, RefreshControl, StyleSheet, View } from 'react-native'
 
 import { AsyncState } from '../../components/AsyncState'
@@ -20,7 +20,23 @@ export function PostsScreen() {
   const navigation = useNavigation<Navigation>()
   const [search, setSearch] = useState('')
   const query = useDebouncedValue(search)
-  const { posts, loading, refreshing, error, refresh } = usePosts(query)
+  const { posts, loading, refreshing, error, refresh, reload } = usePosts(query)
+  // Ao voltar para a aba (ex.: depois de publicar, editar ou excluir um post
+  // na Administracao) a lista recarrega sem spinner. O primeiro foco e a
+  // carga inicial do hook, entao e pulado.
+  // `reload` muda a cada termo de busca; guardado num ref para o efeito de
+  // foco rodar so quando a aba ganha foco, e nao a cada tecla.
+  const focusedOnce = useRef(false)
+  const reloadRef = useRef(reload)
+  useEffect(() => {
+    reloadRef.current = reload
+  }, [reload])
+  useFocusEffect(
+    useCallback(() => {
+      if (focusedOnce.current) reloadRef.current()
+      focusedOnce.current = true
+    }, []),
+  )
   const term = query.trim()
 
   const openPost = useCallback(
