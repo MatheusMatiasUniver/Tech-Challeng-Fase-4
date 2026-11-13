@@ -1,18 +1,12 @@
 import { useNavigation } from '@react-navigation/native'
 import { type NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { useCallback, useState } from 'react'
-import {
-  ActivityIndicator,
-  FlatList,
-  Pressable,
-  RefreshControl,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native'
+import { FlatList, RefreshControl, StyleSheet, View } from 'react-native'
 
+import { AsyncState } from '../../components/AsyncState'
+import { Eyebrow } from '../../components/Eyebrow'
 import { PostCard } from '../../components/PostCard'
+import { TextField } from '../../components/TextField'
 import { useDebouncedValue } from '../../hooks/useDebouncedValue'
 import { usePosts } from '../../hooks/usePosts'
 import { type AppStackParamList } from '../../navigation/types'
@@ -27,6 +21,7 @@ export function PostsScreen() {
   const [search, setSearch] = useState('')
   const query = useDebouncedValue(search)
   const { posts, loading, refreshing, error, refresh } = usePosts(query)
+  const term = query.trim()
 
   const openPost = useCallback(
     (post: Post) => navigation.navigate('PostDetail', { id: post.id, title: post.title }),
@@ -38,79 +33,66 @@ export function PostsScreen() {
     [openPost],
   )
 
-  return (
-    <View style={styles.container}>
-      <TextInput
-        style={styles.search}
+  // Cabecalho da lista rola junto com os cartoes, como na pagina da Fase 3.
+  // No site a busca tem botoes "Buscar" e "Limpar"; no celular ela busca
+  // sozinha ao parar de digitar e o "x" do teclado limpa o campo.
+  const header = (
+    <View style={styles.header}>
+      <Eyebrow>Conteúdo aberto</Eyebrow>
+      <TextField
+        label="Termo de busca"
+        tone="onBg"
         value={search}
         onChangeText={setSearch}
-        placeholderTextColor={colors.muted}
-        placeholder="Buscar por título ou conteúdo"
+        placeholder="Título ou trecho"
         autoCapitalize="none"
         autoCorrect={false}
         clearButtonMode="while-editing"
         returnKeyType="search"
-        accessibilityLabel="Buscar posts"
       />
-
-      {loading && !refreshing ? (
-        <View style={styles.center}>
-          <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={styles.hint}>Carregando posts…</Text>
-        </View>
-      ) : error !== null && posts.length === 0 ? (
-        <View style={styles.center}>
-          <Text style={styles.error}>{error}</Text>
-          <Pressable style={styles.retry} onPress={refresh} accessibilityRole="button">
-            <Text style={styles.retryText}>Tentar de novo</Text>
-          </Pressable>
-        </View>
-      ) : (
-        <FlatList
-          data={posts}
-          keyExtractor={(post) => post.id}
-          renderItem={renderItem}
-          contentContainerStyle={styles.list}
-          ItemSeparatorComponent={Separator}
-          keyboardShouldPersistTaps="handled"
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={refresh} colors={[colors.primary]} />
-          }
-          ListEmptyComponent={
-            <Text style={styles.empty}>
-              {query.trim() === ''
-                ? 'Nenhum post publicado ainda.'
-                : `Nenhum post encontrado para "${query.trim()}".`}
-            </Text>
-          }
-        />
-      )}
     </View>
+  )
+
+  let body: React.ReactElement | null = null
+  if (loading && !refreshing) body = <AsyncState status="loading" label="Carregando posts..." />
+  else if (error !== null) body = <AsyncState status="error" message={error} onRetry={refresh} />
+
+  return (
+    <FlatList
+      style={styles.container}
+      data={body === null ? posts : []}
+      keyExtractor={(post) => post.id}
+      renderItem={renderItem}
+      contentContainerStyle={styles.list}
+      ItemSeparatorComponent={Separator}
+      keyboardShouldPersistTaps="handled"
+      ListHeaderComponent={header}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={refresh}
+          colors={[colors.accent]}
+          tintColor={colors.accent}
+        />
+      }
+      ListEmptyComponent={
+        body ?? (
+          <AsyncState
+            status="empty"
+            label={term === '' ? 'Nenhum post encontrado.' : `Nenhum resultado para "${term}".`}
+          />
+        )
+      }
+    />
   )
 }
 
 function Separator() {
-  return <View style={{ height: spacing.md }} />
+  return <View style={{ height: 18 }} />
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
-  search: {
-    margin: spacing.md,
-    marginBottom: 0,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 8,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm + 2,
-    backgroundColor: colors.surface,
-    fontSize: 16,
-  },
-  list: { padding: spacing.md, flexGrow: 1 },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: spacing.lg },
-  hint: { marginTop: spacing.sm, color: colors.muted },
-  error: { color: colors.danger, textAlign: 'center' },
-  retry: { marginTop: spacing.md, paddingVertical: spacing.sm, paddingHorizontal: spacing.lg },
-  retryText: { color: colors.primary, fontWeight: '600' },
-  empty: { marginTop: spacing.xl, textAlign: 'center', color: colors.muted },
+  container: { flex: 1, backgroundColor: colors.bg },
+  list: { padding: 20, paddingBottom: 40, flexGrow: 1 },
+  header: { marginBottom: 28, gap: spacing.xs },
 })
