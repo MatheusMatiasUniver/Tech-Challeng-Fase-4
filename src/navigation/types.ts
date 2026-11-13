@@ -6,6 +6,8 @@ export type AuthStackParamList = {
 
 export type AppStackParamList = {
   Tabs: undefined
+  // O titulo vai junto so para o cabecalho aparecer na hora, antes do GET.
+  PostDetail: { id: string; title?: string }
 }
 
 export type AppTabsParamList = {

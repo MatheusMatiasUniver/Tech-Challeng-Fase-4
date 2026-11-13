@@ -55,7 +55,8 @@ export function LoginScreen() {
           autoComplete="email"
           keyboardType="email-address"
           textContentType="emailAddress"
-          placeholder="voce@escola.com"
+          placeholderTextColor={colors.muted}
+        placeholder="voce@escola.com"
           accessibilityLabel="E-mail"
         />
 
