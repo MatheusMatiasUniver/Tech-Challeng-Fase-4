@@ -53,3 +53,20 @@ export interface Paginated<T> {
   data: T[]
   meta: PaginationMeta
 }
+
+// Autor do comentario: sem e-mail (a lista e publica e inclui alunos).
+export interface CommentAuthor {
+  id: string
+  name: string
+  role: UserRole
+}
+
+export interface Comment {
+  id: string
+  content: string
+  postId: string
+  authorId: string
+  createdAt: string
+  updatedAt: string
+  author?: CommentAuthor
+}
