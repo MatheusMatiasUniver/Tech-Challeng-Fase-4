@@ -22,6 +22,8 @@ interface AuthContextValue {
   isTeacher: boolean
   signIn: (email: string, password: string) => Promise<void>
   signOut: () => Promise<void>
+  // Atualiza os dados do usuario logado depois que ele edita o proprio cadastro.
+  updateCurrentUser: (user: User) => void
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
@@ -46,6 +48,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await tokenStorage.set(access_token)
     setUser(loggedUser)
     setStatus('signedIn')
+  }, [])
+
+  // So aceita o proprio usuario: editar outra pessoa nao troca quem esta logado.
+  const updateCurrentUser = useCallback((updated: User) => {
+    setUser((current) => (current !== null && current.id === updated.id ? updated : current))
   }, [])
 
   // Qualquer 401 com token (expirado, usuario excluido) derruba a sessao.
@@ -102,8 +109,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isTeacher: user?.role === 'professor',
       signIn,
       signOut,
+      updateCurrentUser,
     }),
-    [status, user, signIn, signOut],
+    [status, user, signIn, signOut, updateCurrentUser],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
