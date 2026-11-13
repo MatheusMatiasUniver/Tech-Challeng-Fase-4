@@ -1,16 +1,19 @@
-// Parametros de cada rota. Telas empilhadas (formularios) entram aqui nos
-// proximos PRs.
+import { type NavigatorScreenParams } from '@react-navigation/native'
+
+export type AppTabsParamList = {
+  Posts: undefined
+  // `notice`: aviso mostrado no topo depois de criar/editar (ex.: "Post publicado.").
+  AdminPosts: { notice?: string } | undefined
+  People: undefined
+  Account: undefined
+}
+
 export type AppStackParamList = {
-  Tabs: undefined
+  Tabs: NavigatorScreenParams<AppTabsParamList> | undefined
   // O titulo vai junto so para o cabecalho aparecer na hora, antes do GET.
   PostDetail: { id: string; title?: string }
   // So existe enquanto ninguem esta logado.
   Login: undefined
-}
-
-export type AppTabsParamList = {
-  Posts: undefined
-  AdminPosts: undefined
-  People: undefined
-  Account: undefined
+  // Sem id cria um post; com id edita. So existe para professores.
+  PostForm: { id?: string } | undefined
 }

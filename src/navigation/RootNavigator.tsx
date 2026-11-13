@@ -5,6 +5,7 @@ import { ActivityIndicator, StyleSheet, View } from 'react-native'
 import { useAuth } from '../auth/AuthContext'
 import { LoginScreen } from '../screens/Login/LoginScreen'
 import { PostDetailScreen } from '../screens/PostDetail/PostDetailScreen'
+import { PostFormScreen } from '../screens/PostForm/PostFormScreen'
 import { colors } from '../theme'
 import { AppTabs } from './AppTabs'
 import { headerTitleStyle, navigationTheme } from './theme'
@@ -18,7 +19,7 @@ const Stack = createNativeStackNavigator<AppStackParamList>()
 // enquanto ninguem esta logado: ao entrar, o React Navigation a remove sozinho
 // e volta para onde o usuario estava, sem precisar de navigate().
 export function RootNavigator() {
-  const { status } = useAuth()
+  const { status, isTeacher } = useAuth()
 
   if (status === 'restoring') {
     return (
@@ -39,6 +40,14 @@ export function RootNavigator() {
           // o "voltar", como o link "← Voltar para a lista" do site.
           options={{ title: '', headerBackTitle: 'Voltar', headerTitleStyle }}
         />
+        {/* Rota protegida: o formulario so existe para professor logado. */}
+        {isTeacher && (
+          <Stack.Screen
+            name="PostForm"
+            component={PostFormScreen}
+            options={{ headerBackTitle: 'Voltar', headerTitleStyle }}
+          />
+        )}
         {status !== 'signedIn' && (
           <Stack.Screen
             name="Login"
