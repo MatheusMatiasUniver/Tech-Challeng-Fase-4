@@ -26,7 +26,7 @@ Run lint and typecheck before declaring any task done.
 ## Navigation & Routing
 
 - This project uses **React Navigation** (native stack + bottom tabs), not Expo Router. The choice is explained in `docs/arquitetura.md`.
-- Navigators live in `src/navigation/`; screens in `src/screens/<Name>/`. Protected routes work by rendering either the auth stack or the app stack from `RootNavigator`, based on `useAuth().status`.
+- Navigators live in `src/navigation/`; screens in `src/screens/<Name>/`. Protected routes work by registering teacher-only screens in `RootNavigator`/`AppTabs` only when `useAuth().isTeacher` is true; reading is public and `Login` is registered only while signed out.
 
 ## Building with EAS
 
