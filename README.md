@@ -123,15 +123,16 @@ Para isso funcionar, a API da Fase 2 ganhou nesta fase papéis (`professor`/`alu
 
 **Opção A, API publicada (mais simples).** Não precisa fazer nada: o `.env.example` já aponta para o Render. O plano gratuito do Render "dorme" depois de um tempo parado, então a primeira requisição pode levar até ~50 s; o app espera até 60 s antes de mostrar erro.
 
-**Opção B, API local.** Suba a Fase 2 com Docker:
+**Opção B, API local com Docker Compose (sem clonar a Fase 2).** Na pasta deste repositório:
 
 ```bash
-git clone https://github.com/MatheusMatiasUniver/Tech-Challeng-Fase-2.git
-cd Tech-Challeng-Fase-2
-cp .env.example .env
-docker compose up -d postgres api
-curl http://localhost:3001/health
+docker compose up -d --build
+curl http://localhost:3001/health   # {"status":"ativo"}
 ```
+
+O `docker-compose.yml` daqui sobe dois containers: o PostgreSQL e a API da Fase 2. O código da API é baixado pelo próprio Docker direto do GitHub (`build.context` apontando para o repositório da Fase 2, branch `master`), então não é preciso clonar nada além deste repositório. Ao iniciar, a API roda as migrations e o seed dos usuários de teste (tabela abaixo) e fica em `http://localhost:3001`. As variáveis já vêm preenchidas no compose, com valores só para uso local. Para desligar: `docker compose down` (acrescente `-v` para apagar o banco). Para pegar uma versão nova da API: `docker compose build --no-cache api`.
+
+Por que o app não está no compose: o app não é um servidor. O Expo gera o bundle e o entrega ao Expo Go do celular ou ao emulador pela rede local, com QR code e recarga ao vivo. Dentro de um container isso exigiria expor várias portas e configurar o IP da máquina para o Metro, o que dá mais trabalho do que rodar `npx expo start` direto, e o celular continuaria precisando do IP do computador.
 
 O celular não enxerga o `localhost` do computador. No `.env` do app, use o IP do computador na rede (por exemplo `http://192.168.0.10:3001`). No emulador Android, `http://10.0.2.2:3001` aponta para o computador.
 
@@ -147,7 +148,7 @@ npx expo start
 
 - **Celular:** leia o QR code com a câmera (iOS) ou com o Expo Go (Android).
 - **Emulador:** com o terminal do Expo aberto, tecle `a` (Android) ou `i` (iOS).
-- **Navegador:** tecle `w`. Útil para olhar telas rápido, mas o navegador exige CORS: na API local, defina `CORS_ORIGINS=http://localhost:8081` no `.env` da Fase 2.
+- **Navegador:** tecle `w`. Útil para olhar telas rápido, mas o navegador exige CORS: o `docker-compose.yml` deste repositório já libera `http://localhost:8081`.
 
 `EXPO_PUBLIC_API_URL` é lida quando o bundle é gerado. Depois de mudar o `.env`, reinicie com `npx expo start -c` para limpar o cache.
 
