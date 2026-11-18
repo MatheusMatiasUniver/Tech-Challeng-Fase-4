@@ -1,0 +1,54 @@
+# Sobe a API da Fase 2 + PostgreSQL para o app usar localmente,
+# sem precisar clonar o repositório da Fase 2.
+#
+#   docker compose up -d --build
+#   curl http://localhost:3001/health
+#
+# O app (Expo) roda fora do Docker: veja "Como Executar o Projeto" no README.
+
+name: tech-challenge-fase-4
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: tech_challenge
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d tech_challenge"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  api:
+    # O Docker baixa o código direto do GitHub (branch master) e usa o
+    # Dockerfile da Fase 2. Ao subir, o container roda as migrations,
+    # o seed de usuários de teste e depois a API.
+    build:
+      context: https://github.com/MatheusMatiasUniver/Tech-Challeng-Fase-2.git#master
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PORT: 3001
+      NODE_ENV: production
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_NAME: tech_challenge
+      DATABASE_USER: postgres
+      DATABASE_PASSWORD: postgres
+      DATABASE_SSL: "false"
+      # Segredo só para rodar localmente. Não use em produção.
+      JWT_SECRET: dev-local-tech-challenge-fase-4-jwt-secret
+      JWT_EXPIRES_IN: 1h
+      # Libera o app na versão web do Expo (tecla "w"). Celular e emulador não precisam.
+      CORS_ORIGINS: http://localhost:8081
+    ports:
+      - "3001:3001"
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
